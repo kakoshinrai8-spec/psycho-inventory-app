@@ -36,14 +36,14 @@ DEFAULT_TARGET_KEYWORDS = [
 
 GUIDE_TEXTS = {
     "step1": [
-        "在庫システムへログインして、在庫データの出力メニューを開きます。",
-        "対象条件を確認して、出力実行ボタンを押します。",
-        "ダウンロードされたファイルを任意の場所へ保存します。",
+        "現在在庫検索を開きます。",
+        "条件を指定して検索します。",
+        "在庫データをダウンロードします。",
     ],
     "step2": [
-        "この画面のアップロード欄を開きます。",
-        "保存した在庫データファイルを選択します。",
-        "アップロード後に読み込み完了を確認します。",
+        "在庫データをアップロードします。",
+        "資料を作成します。",
+        "完成ファイルをダウンロードします。",
     ],
 }
 
@@ -112,6 +112,26 @@ st.markdown(
     border-radius: 14px;
     padding: 12px 14px;
     margin: 10px 0;
+}
+.guide-slider-card {
+    max-width: 560px;
+    width: 100%;
+    margin: 8px auto 24px auto;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 14px 18px 12px 18px;
+}
+.guide-page {
+    text-align: center;
+    font-weight: 700;
+    color: #374151;
+    line-height: 2.3rem;
+}
+.guide-caption {
+    text-align: center;
+    color: #4b5563;
+    margin-top: 6px;
 }
 </style>
 """,
@@ -354,28 +374,44 @@ def render_guide_slider(prefix: str, descriptions: list[str]) -> None:
     current_index = max(0, min(current_index, total - 1))
     st.session_state[state_key] = current_index
 
-    col_prev, col_pos, col_next = st.columns([1, 2, 1])
+    with st.container(border=False):
+        st.markdown("<div class='guide-slider-card'>", unsafe_allow_html=True)
 
-    with col_prev:
-        if st.button("前へ", key=f"{prefix}_prev", use_container_width=True):
-            st.session_state[state_key] = (st.session_state[state_key] - 1) % total
-            st.rerun()
+        col_prev, col_pos, col_next = st.columns([1.2, 0.9, 1.2], gap="small")
 
-    with col_pos:
-        st.markdown(
-            f"<div style='text-align:center; font-weight:600;'>{current_index + 1} / {total}</div>",
-            unsafe_allow_html=True,
-        )
+        with col_prev:
+            if st.button(
+                "← 前の画像",
+                key=f"{prefix}_prev",
+                disabled=(current_index == 0),
+            ):
+                st.session_state[state_key] = max(0, st.session_state[state_key] - 1)
+                st.rerun()
 
-    with col_next:
-        if st.button("次へ", key=f"{prefix}_next", use_container_width=True):
-            st.session_state[state_key] = (st.session_state[state_key] + 1) % total
-            st.rerun()
+        with col_pos:
+            st.markdown(
+                f"<div class='guide-page'>{current_index + 1} / {total}</div>",
+                unsafe_allow_html=True,
+            )
 
-    st.image(str(images[current_index]), use_container_width=True)
+        with col_next:
+            if st.button(
+                "次の画像 →",
+                key=f"{prefix}_next",
+                disabled=(current_index == total - 1),
+            ):
+                st.session_state[state_key] = min(total - 1, st.session_state[state_key] + 1)
+                st.rerun()
 
-    if current_index < len(descriptions):
-        st.caption(descriptions[current_index])
+        st.image(str(images[current_index]), width=520)
+
+        if current_index < len(descriptions):
+            st.markdown(
+                f"<div class='guide-caption'>{descriptions[current_index]}</div>",
+                unsafe_allow_html=True,
+            )
+
+        st.markdown("</div>", unsafe_allow_html=True)
 
 
 # =========================
