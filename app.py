@@ -9,12 +9,12 @@ import streamlit as st
 # 基本設定
 # =========================
 st.set_page_config(
-    page_title="向精神薬・生活改善薬・毒薬 在庫資料作成",
+    page_title="向精神薬チェックツール",
     page_icon="📦",
     layout="wide",
 )
 
-APP_TITLE = "向精神薬・生活改善薬・毒薬 在庫資料作成"
+APP_TITLE = "向精神薬チェックツール"
 OUTPUT_SHEET_NAME = "向精神クエリ"
 MASTER_CSV_PATH = Path("masters/product_master.csv")
 
@@ -178,9 +178,8 @@ def load_master(master_upload=None) -> pd.DataFrame:
     """
     商品マスタを読む。
     優先順位：
-    1. 在庫資料作成タブでアップロードされたマスタ
-    2. 管理者用タブで今回反映したマスタ
-    3. masters/product_master.csv
+    1. 管理者用タブで今回反映したマスタ
+    2. masters/product_master.csv
     """
     if master_upload is not None:
         master = read_table(master_upload)
@@ -322,7 +321,7 @@ def show_step(title: str, body: str):
 st.title(APP_TITLE)
 
 st.caption(
-    "在庫データを取り込み、商品マスタと照合して、向精神薬・生活改善薬・毒薬の在庫資料を作成します。"
+    "在庫データを取り込み、対象商品のチェック用資料を作成します。"
 )
 
 tab_make, tab_admin = st.tabs(["在庫資料作成", "管理者用"])
@@ -335,7 +334,7 @@ with tab_make:
     )
 
     show_step(
-        "ステップ2：ファイルをインポート",
+        "ステップ2：在庫データをアップロード",
         "ダウンロードした在庫データを下のアップロード欄に入れてください。"
     )
 
@@ -369,7 +368,7 @@ with tab_make:
 
                 if output_df.empty:
                     st.markdown(
-                        '<div class="warn-box">対象データが0件でした。商品コード、商品マスタの記号、対象キーワードを確認してください。</div>',
+                        '<div class="warn-box">対象データが0件でした。商品コードと商品マスタの記号を確認してください。</div>',
                         unsafe_allow_html=True,
                     )
                     st.stop()
