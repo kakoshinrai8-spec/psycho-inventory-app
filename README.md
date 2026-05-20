@@ -79,7 +79,7 @@ python -m streamlit run app.py
 
 ## 補足
 
-在庫資料作成タブの Step1 / Step2 には、`guide` フォルダ内の画像をスライド表示します。
+在庫資料作成タブの Step1 / Step2 には、`guide` フォルダ内の画像を1枚ずつ表示し、`← 前の画像` / `次の画像 →` ボタンで切り替えるスライド形式の操作ガイドを表示します。
 
 - Step1 用: `guide/step1_*.png`
 - Step2 用: `guide/step2_*.png`
