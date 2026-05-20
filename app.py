@@ -17,6 +17,7 @@ st.set_page_config(
 APP_TITLE = "向精神薬チェックツール"
 OUTPUT_SHEET_NAME = "向精神クエリ"
 MASTER_CSV_PATH = Path("masters/product_master.csv")
+GUIDE_DIR = Path("guide")
 
 OUTPUT_COLUMNS = [
     "商品コード",
@@ -32,6 +33,19 @@ DEFAULT_TARGET_KEYWORDS = [
     "生活改善薬",
     "毒薬",
 ]
+
+GUIDE_TEXTS = {
+    "step1": [
+        "在庫システムへログインして、在庫データの出力メニューを開きます。",
+        "対象条件を確認して、出力実行ボタンを押します。",
+        "ダウンロードされたファイルを任意の場所へ保存します。",
+    ],
+    "step2": [
+        "この画面のアップロード欄を開きます。",
+        "保存した在庫データファイルを選択します。",
+        "アップロード後に読み込み完了を確認します。",
+    ],
+}
 
 
 # =========================
@@ -315,6 +329,55 @@ def show_step(title: str, body: str):
     )
 
 
+def get_guide_images(prefix: str) -> list[Path]:
+    """guide フォルダから指定プレフィックス画像を順序付きで取得する。"""
+    if not GUIDE_DIR.exists():
+        return []
+    return sorted(
+        [p for p in GUIDE_DIR.glob(f"{prefix}_*.png") if p.is_file()],
+        key=lambda p: p.name,
+    )
+
+
+def render_guide_slider(prefix: str, descriptions: list[str]) -> None:
+    """前へ/次へで切り替える簡易スライドUIを表示する。"""
+    images = get_guide_images(prefix)
+    if not images:
+        return
+
+    state_key = f"{prefix}_slide_index"
+    if state_key not in st.session_state:
+        st.session_state[state_key] = 0
+
+    total = len(images)
+    current_index = st.session_state[state_key]
+    current_index = max(0, min(current_index, total - 1))
+    st.session_state[state_key] = current_index
+
+    col_prev, col_pos, col_next = st.columns([1, 2, 1])
+
+    with col_prev:
+        if st.button("前へ", key=f"{prefix}_prev", use_container_width=True):
+            st.session_state[state_key] = (st.session_state[state_key] - 1) % total
+            st.rerun()
+
+    with col_pos:
+        st.markdown(
+            f"<div style='text-align:center; font-weight:600;'>{current_index + 1} / {total}</div>",
+            unsafe_allow_html=True,
+        )
+
+    with col_next:
+        if st.button("次へ", key=f"{prefix}_next", use_container_width=True):
+            st.session_state[state_key] = (st.session_state[state_key] + 1) % total
+            st.rerun()
+
+    st.image(str(images[current_index]), use_container_width=True)
+
+    if current_index < len(descriptions):
+        st.caption(descriptions[current_index])
+
+
 # =========================
 # 画面
 # =========================
@@ -332,11 +395,13 @@ with tab_make:
         "いつもの手順で在庫データをダウンロードしてください。"
         "<br>あとでここに操作画像やGIFを入れます。"
     )
+    render_guide_slider("step1", GUIDE_TEXTS.get("step1", []))
 
     show_step(
         "ステップ2：在庫データをアップロード",
         "ダウンロードした在庫データを下のアップロード欄に入れてください。"
     )
+    render_guide_slider("step2", GUIDE_TEXTS.get("step2", []))
 
     source_file = st.file_uploader(
         "在庫データをアップロード",

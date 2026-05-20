@@ -33,6 +33,13 @@
 psycho_inventory_app
 ├─ app.py
 ├─ requirements.txt
+├─ guide
+│  ├─ step1_01.png
+│  ├─ step1_02.png
+│  ├─ step1_03.png
+│  ├─ step2_01.png
+│  ├─ step2_02.png
+│  └─ step2_03.png
 ├─ masters
 │  └─ product_master.csv
 └─ assets
@@ -71,6 +78,13 @@ python -m streamlit run app.py
 ```
 
 ## 補足
+
+在庫資料作成タブの Step1 / Step2 には、`guide` フォルダ内の画像をスライド表示します。
+
+- Step1 用: `guide/step1_*.png`
+- Step2 用: `guide/step2_*.png`
+
+画像が存在するものだけを読み込みます（存在しない場合は表示しません）。
 
 対象は、向精神薬Ⅱ・向精神薬Ⅲ・生活改善薬・毒薬を基本にしています。
 
