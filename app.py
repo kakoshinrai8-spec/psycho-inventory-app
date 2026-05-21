@@ -113,33 +113,16 @@ st.markdown(
     padding: 12px 14px;
     margin: 10px 0;
 }
-.guide-slider-card {
-    max-width: 860px;
-    margin: 12px auto 24px auto;
-    padding: 14px 18px 16px 18px;
-    border-radius: 18px;
-    border: 1px solid #e5e7eb;
-    background: #ffffff;
-    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
-}
-.guide-nav {
-    max-width: 720px;
-    margin: 0 auto 8px auto;
-}
 .guide-page {
     text-align: center;
     font-weight: 700;
     color: #374151;
-    line-height: 2rem;
-}
-.guide-image {
-    display: flex;
-    justify-content: center;
+    line-height: 1.9rem;
 }
 .guide-caption {
     text-align: center;
     color: #6b7280;
-    margin-top: 6px;
+    margin-top: 8px;
 }
 </style>
 """,
@@ -382,48 +365,43 @@ def render_guide_slider(prefix: str, descriptions: list[str]) -> None:
     current_index = max(0, min(current_index, total - 1))
     st.session_state[state_key] = current_index
 
-    st.markdown("<div class='guide-slider-card'>", unsafe_allow_html=True)
-    st.markdown("<div class='guide-nav'>", unsafe_allow_html=True)
+    left_space, center_col, right_space = st.columns([1, 3, 1], gap="small")
+    with center_col:
+        nav_container = st.container()
+        with nav_container:
+            prev_col, count_col, next_col = st.columns([1, 1, 1], gap="small")
 
-    nav_left, nav_pos, nav_right = st.columns([1.2, 0.8, 1.2], gap="small")
-    with nav_left:
-        if st.button(
-            "← 前の画像",
-            key=f"{prefix}_prev",
-            use_container_width=False,
-            disabled=(current_index == 0),
-        ):
-            st.session_state[state_key] = max(0, st.session_state[state_key] - 1)
-            st.rerun()
+            with prev_col:
+                if st.button(
+                    "← 前の画像",
+                    key=f"{prefix}_prev",
+                    disabled=(current_index == 0),
+                ):
+                    st.session_state[state_key] = max(0, st.session_state[state_key] - 1)
+                    st.rerun()
 
-    with nav_pos:
-        st.markdown(
-            f"<div class='guide-page'>{current_index + 1} / {total}</div>",
-            unsafe_allow_html=True,
-        )
+            with count_col:
+                st.markdown(
+                    f"<div class='guide-page'>{current_index + 1} / {total}</div>",
+                    unsafe_allow_html=True,
+                )
 
-    with nav_right:
-        if st.button(
-            "次の画像 →",
-            key=f"{prefix}_next",
-            use_container_width=False,
-            disabled=(current_index == total - 1),
-        ):
-            st.session_state[state_key] = min(total - 1, st.session_state[state_key] + 1)
-            st.rerun()
+            with next_col:
+                if st.button(
+                    "次の画像 →",
+                    key=f"{prefix}_next",
+                    disabled=(current_index == total - 1),
+                ):
+                    st.session_state[state_key] = min(total - 1, st.session_state[state_key] + 1)
+                    st.rerun()
 
-    st.markdown("</div>", unsafe_allow_html=True)
-    st.markdown("<div class='guide-image'>", unsafe_allow_html=True)
-    st.image(str(images[current_index]), width=720)
-    st.markdown("</div>", unsafe_allow_html=True)
+        st.image(str(images[current_index]), width=720)
 
-    if current_index < len(descriptions):
-        st.markdown(
-            f"<div class='guide-caption'>{descriptions[current_index]}</div>",
-            unsafe_allow_html=True,
-        )
-
-    st.markdown("</div>", unsafe_allow_html=True)
+        if current_index < len(descriptions):
+            st.markdown(
+                f"<div class='guide-caption'>{descriptions[current_index]}</div>",
+                unsafe_allow_html=True,
+            )
 
 
 # =========================
