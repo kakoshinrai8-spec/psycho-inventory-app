@@ -114,24 +114,27 @@ st.markdown(
     margin: 10px 0;
 }
 .guide-slider-card {
-    max-width: 560px;
-    width: 100%;
-    margin: 8px auto 24px auto;
-    background: #ffffff;
+    max-width: 820px;
+    margin: 18px auto 28px auto;
+    padding: 16px 18px 18px 18px;
+    border-radius: 18px;
     border: 1px solid #e5e7eb;
-    border-radius: 16px;
-    padding: 14px 18px 12px 18px;
+    background: #ffffff;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+}
+.guide-nav {
+    margin-bottom: 10px;
 }
 .guide-page {
     text-align: center;
     font-weight: 700;
     color: #374151;
-    line-height: 2.3rem;
+    line-height: 2.2rem;
 }
 .guide-caption {
     text-align: center;
-    color: #4b5563;
-    margin-top: 6px;
+    color: #6b7280;
+    margin-top: 8px;
 }
 </style>
 """,
@@ -374,36 +377,40 @@ def render_guide_slider(prefix: str, descriptions: list[str]) -> None:
     current_index = max(0, min(current_index, total - 1))
     st.session_state[state_key] = current_index
 
-    with st.container(border=False):
+    outer_left, outer_center, outer_right = st.columns([1, 12, 1])
+    with outer_center:
         st.markdown("<div class='guide-slider-card'>", unsafe_allow_html=True)
 
-        col_prev, col_pos, col_next = st.columns([1.2, 0.9, 1.2], gap="small")
-
-        with col_prev:
+        nav_left, nav_pos, nav_right = st.columns([1.3, 1, 1.3], gap="small")
+        with nav_left:
             if st.button(
                 "← 前の画像",
                 key=f"{prefix}_prev",
+                use_container_width=False,
                 disabled=(current_index == 0),
             ):
                 st.session_state[state_key] = max(0, st.session_state[state_key] - 1)
                 st.rerun()
 
-        with col_pos:
+        with nav_pos:
             st.markdown(
                 f"<div class='guide-page'>{current_index + 1} / {total}</div>",
                 unsafe_allow_html=True,
             )
 
-        with col_next:
+        with nav_right:
             if st.button(
                 "次の画像 →",
                 key=f"{prefix}_next",
+                use_container_width=False,
                 disabled=(current_index == total - 1),
             ):
                 st.session_state[state_key] = min(total - 1, st.session_state[state_key] + 1)
                 st.rerun()
 
-        st.image(str(images[current_index]), width=520)
+        img_left, img_center, img_right = st.columns([0.2, 6, 0.2])
+        with img_center:
+            st.image(str(images[current_index]), width=720)
 
         if current_index < len(descriptions):
             st.markdown(
