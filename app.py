@@ -40,7 +40,7 @@ GUIDE_TEXTS = {
         "支店を選択して検索し、CSV出力を押してファイルを保存します。",
     ],
     "step2": [
-        "保存した在庫データファイルをアップロードします。",
+        "ダウンロードした在庫データをアップロードします。",
         "内容を確認して、資料を作成します。",
         "完成したExcelファイルをダウンロードします。",
     ],
@@ -120,10 +120,12 @@ st.markdown(
 }
 .guide-caption {
     text-align: center;
-    color: #475569;
-    margin-top: 6px;
-    margin-bottom: 2px;
+    color: #f8fafc;
+    margin-top: 4px;
+    margin-bottom: 8px;
     line-height: 1.6;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(15, 23, 42, 0.8);
 }
 .upload-guide-card {
     background: #dbeafe;
@@ -444,14 +446,14 @@ def render_guide_slider(prefix: str, descriptions: list[str], fallback_descripti
                     st.session_state[state_key] = min(total - 1, st.session_state[state_key] + 1)
                     st.rerun()
 
-        st.image(str(images[current_index]), width=720)
-
         caption = descriptions[current_index] if current_index < len(descriptions) else fallback_description
         if caption:
             st.markdown(
                 f"<div class='guide-caption'>{caption}</div>",
                 unsafe_allow_html=True,
             )
+
+        st.image(str(images[current_index]), width=720)
 
 
 # =========================
