@@ -36,14 +36,13 @@ DEFAULT_TARGET_KEYWORDS = [
 
 GUIDE_TEXTS = {
     "step1": [
-        "現在在庫検索を開きます。",
-        "条件を指定して検索します。",
-        "在庫データをダウンロードします。",
+        "「現在在庫検索」を開きます。",
+        "支店を選択して検索し、CSV出力を押してファイルを保存します。",
     ],
     "step2": [
-        "在庫データをアップロードします。",
-        "資料を作成します。",
-        "完成ファイルをダウンロードします。",
+        "保存した在庫データファイルをアップロードします。",
+        "内容を確認して、資料を作成します。",
+        "完成したExcelファイルをダウンロードします。",
     ],
 }
 
@@ -121,8 +120,27 @@ st.markdown(
 }
 .guide-caption {
     text-align: center;
-    color: #6b7280;
-    margin-top: 8px;
+    color: #475569;
+    margin-top: 6px;
+    margin-bottom: 2px;
+    line-height: 1.6;
+}
+.upload-guide-card {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin: 10px 0 12px 0;
+}
+.upload-guide-title {
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 4px;
+}
+.upload-guide-note {
+    color: #334155;
+    font-size: 0.92rem;
+    line-height: 1.6;
 }
 </style>
 """,
@@ -350,7 +368,7 @@ def get_guide_images(prefix: str) -> list[Path]:
     )
 
 
-def render_guide_slider(prefix: str, descriptions: list[str]) -> None:
+def render_guide_slider(prefix: str, descriptions: list[str], fallback_description: str = "") -> None:
     """前へ/次へで切り替える簡易スライドUIを表示する。"""
     images = get_guide_images(prefix)
     if not images:
@@ -397,9 +415,10 @@ def render_guide_slider(prefix: str, descriptions: list[str]) -> None:
 
         st.image(str(images[current_index]), width=720)
 
-        if current_index < len(descriptions):
+        caption = descriptions[current_index] if current_index < len(descriptions) else fallback_description
+        if caption:
             st.markdown(
-                f"<div class='guide-caption'>{descriptions[current_index]}</div>",
+                f"<div class='guide-caption'>{caption}</div>",
                 unsafe_allow_html=True,
             )
 
@@ -418,22 +437,43 @@ tab_make, tab_admin = st.tabs(["在庫資料作成", "管理者用"])
 with tab_make:
     show_step(
         "ステップ1：在庫データをダウンロード",
-        "いつもの手順で在庫データをダウンロードしてください。"
-        "<br>あとでここに操作画像やGIFを入れます。"
+        "下の画像を順番に確認しながら、在庫データを保存してください。"
     )
-    render_guide_slider("step1", GUIDE_TEXTS.get("step1", []))
+    render_guide_slider(
+        "step1",
+        GUIDE_TEXTS.get("step1", []),
+        fallback_description="表示された内容を確認し、必要なデータを保存します。",
+    )
 
     show_step(
         "ステップ2：在庫データをアップロード",
-        "ダウンロードした在庫データを下のアップロード欄に入れてください。"
+        "ステップ1で保存した在庫データファイルを、下のアップロード欄に入れてください。"
     )
     render_guide_slider("step2", GUIDE_TEXTS.get("step2", []))
 
+    st.markdown(
+        """
+        <div class="upload-guide-card">
+            <div class="upload-guide-title">📂 ここに在庫データファイルを入れてください</div>
+            <div class="upload-guide-note">
+                ステップ1で保存したExcelまたはCSVファイルをアップロードしてください。<br>
+                ファイルをドラッグ＆ドロップ、または Upload ボタンから選択できます。
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
     source_file = st.file_uploader(
-        "在庫データをアップロード",
+        "在庫データファイルを選択またはドラッグ＆ドロップ",
         type=["xlsx", "xls", "csv"],
-        help="商品コード・商品名・包装単位・数/数量/在庫数 が入っているファイルを選んでください。",
+        help="ExcelまたはCSVファイルをアップロードしてください。商品コード・商品名・包装単位・数/数量/在庫数が必要です。",
         key="source_file",
+    )
+
+    st.markdown(
+        '<div class="small-note">アップロード後、自動で内容を読み込みます。内容を確認してから「資料を作成する」を押してください。</div>',
+        unsafe_allow_html=True,
     )
 
     master_file = None
@@ -442,7 +482,7 @@ with tab_make:
     st.markdown("---")
 
     if source_file is None:
-        st.info("まず在庫データをアップロードしてください。")
+        st.info("在庫データファイルをアップロードすると、資料作成を開始できます。")
     else:
         try:
             source_df = read_table(source_file)
