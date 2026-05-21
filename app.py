@@ -126,21 +126,52 @@ st.markdown(
     line-height: 1.6;
 }
 .upload-guide-card {
-    background: #eff6ff;
-    border: 1px solid #bfdbfe;
-    border-radius: 14px;
-    padding: 14px 16px;
-    margin: 10px 0 12px 0;
+    background: #dbeafe;
+    border: 2px solid #60a5fa;
+    border-radius: 18px;
+    padding: 20px 22px;
+    margin: 12px 0 14px 0;
+    width: 100%;
+    box-sizing: border-box;
 }
 .upload-guide-title {
     font-weight: 800;
+    font-size: 1.15rem;
     color: #0f172a;
-    margin-bottom: 4px;
+    margin-bottom: 8px;
 }
 .upload-guide-note {
-    color: #334155;
-    font-size: 0.92rem;
-    line-height: 1.6;
+    color: #1e293b;
+    font-size: 1rem;
+    line-height: 1.8;
+}
+.upload-guide-em {
+    font-weight: 800;
+    color: #1d4ed8;
+}
+div[data-testid="stFileUploaderDropzone"] {
+    background: #f8fbff;
+    border: 2px dashed #60a5fa;
+    border-radius: 14px;
+    padding: 18px 14px;
+}
+div[data-testid="stFileUploaderDropzone"]:hover {
+    border-color: #2563eb;
+    background: #eff6ff;
+}
+div[data-testid="stFileUploaderDropzone"] button {
+    background: #2563eb;
+    color: #ffffff;
+    border: 2px solid #1e40af;
+    border-radius: 10px;
+    font-weight: 800;
+    font-size: 1rem;
+    padding: 0.45rem 1rem;
+}
+div[data-testid="stFileUploaderDropzone"] button:hover {
+    background: #1d4ed8;
+    border-color: #1e3a8a;
+    color: #ffffff;
 }
 </style>
 """,
@@ -447,7 +478,7 @@ with tab_make:
 
     show_step(
         "ステップ2：在庫データをアップロード",
-        "ステップ1で保存した在庫データファイルを、下のアップロード欄に入れてください。"
+        "ダウンロードした在庫データを下のアップロード欄に入れてください。"
     )
     render_guide_slider("step2", GUIDE_TEXTS.get("step2", []))
 
@@ -457,7 +488,9 @@ with tab_make:
             <div class="upload-guide-title">📂 ここに在庫データファイルを入れてください</div>
             <div class="upload-guide-note">
                 ステップ1で保存したExcelまたはCSVファイルをアップロードしてください。<br>
-                ファイルをドラッグ＆ドロップ、または Upload ボタンから選択できます。
+                ファイルを<span class="upload-guide-em">ドラッグ＆ドロップ</span>、または下の
+                <span class="upload-guide-em">Uploadボタン</span>から選択できます。<br>
+                対応形式：Excel（.xlsx / .xls）・CSV
             </div>
         </div>
         """,
