@@ -1,4 +1,5 @@
 import io
+from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
@@ -487,12 +488,11 @@ with tab_make:
     st.markdown(
         """
         <div class="upload-guide-card">
-            <div class="upload-guide-title">📂 ここに在庫データファイルを入れてください</div>
+            <div class="upload-guide-title">📂 在庫データをアップロードしてください</div>
             <div class="upload-guide-note">
-                ステップ1で保存したExcelまたはCSVファイルをアップロードしてください。<br>
-                ファイルを<span class="upload-guide-em">ドラッグ＆ドロップ</span>、または下の
-                <span class="upload-guide-em">Uploadボタン</span>から選択できます。<br>
-                対応形式：Excel（.xlsx / .xls）・CSV
+                ステップ1で保存したファイルを、下のアップロード欄に入れてください。<br>
+                ⬇ 下の枠へ<span class="upload-guide-em">ドラッグ＆ドロップ</span>、または
+                <span class="upload-guide-em">Upload ボタン</span>から選択できます。
             </div>
         </div>
         """,
@@ -556,7 +556,7 @@ with tab_make:
                 st.download_button(
                     label="完成ファイルをダウンロード",
                     data=excel_bytes,
-                    file_name="向精神薬_生活改善薬_毒薬_在庫資料.xlsx",
+                    file_name=f"向精神薬リスト{datetime.now().strftime('%Y%m%d')}.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     use_container_width=True,
                 )
