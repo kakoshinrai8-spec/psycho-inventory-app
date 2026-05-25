@@ -38,7 +38,9 @@ DEFAULT_TARGET_KEYWORDS = [
 GUIDE_TEXTS = {
     "step1": [
         "「現在在庫検索」を開きます。",
-        "支店を選択して検索し、CSV出力を押してファイルを保存します。",
+        "支店を選択して検索します。",
+        "検索結果を確認します。",
+        "CSV出力を押してファイルを保存します。",
     ],
     "step2": [
         "ダウンロードした在庫データをアップロードします。",
@@ -70,15 +72,15 @@ st.markdown(
 .step-title {
     font-size: 1.15rem;
     font-weight: 800;
-    color: #111827;
+    color: #0f172a;
     margin-bottom: 8px;
 }
 .step-note {
-    color: #4b5563;
+    color: #334155;
     line-height: 1.7;
 }
 .small-note {
-    color: #6b7280;
+    color: #334155;
     font-size: 0.92rem;
 }
 .ok-box {
@@ -113,20 +115,19 @@ st.markdown(
     padding: 12px 14px;
     margin: 10px 0;
 }
-.guide-page {
+.guide-slide-count {
     text-align: center;
     font-weight: 700;
-    color: #374151;
+    color: #334155 !important;
     line-height: 1.9rem;
 }
 .guide-caption {
     text-align: center;
-    color: #f8fafc;
+    color: #1f2937 !important;
     margin-top: 4px;
     margin-bottom: 8px;
     line-height: 1.6;
     font-weight: 700;
-    text-shadow: 0 1px 2px rgba(15, 23, 42, 0.8);
 }
 .upload-guide-card {
     background: #dbeafe;
@@ -144,7 +145,7 @@ st.markdown(
     margin-bottom: 8px;
 }
 .upload-guide-note {
-    color: #1e293b;
+    color: #334155;
     font-size: 1rem;
     line-height: 1.8;
 }
@@ -152,29 +153,38 @@ st.markdown(
     font-weight: 800;
     color: #1d4ed8;
 }
-div[data-testid="stFileUploaderDropzone"] {
-    background: #f8fbff;
-    border: 2px dashed #60a5fa;
-    border-radius: 14px;
-    padding: 18px 14px;
+div[data-testid="stFileUploader"] {
+    margin-top: 8px;
 }
-div[data-testid="stFileUploaderDropzone"]:hover {
-    border-color: #2563eb;
-    background: #eff6ff;
+div[data-testid="stFileUploader"] section[data-testid="stFileUploaderDropzone"] {
+    min-height: 120px !important;
+    padding: 28px 30px !important;
+    background: #eef6ff !important;
+    border: 2px dashed #3b82f6 !important;
+    border-radius: 16px !important;
+    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.18) !important;
 }
-div[data-testid="stFileUploaderDropzone"] button {
-    background: #2563eb;
-    color: #ffffff;
-    border: 2px solid #1e40af;
-    border-radius: 10px;
-    font-weight: 800;
-    font-size: 1rem;
-    padding: 0.45rem 1rem;
+div[data-testid="stFileUploader"] section[data-testid="stFileUploaderDropzone"] * {
+    color: #0f172a !important;
 }
-div[data-testid="stFileUploaderDropzone"] button:hover {
-    background: #1d4ed8;
-    border-color: #1e3a8a;
-    color: #ffffff;
+div[data-testid="stFileUploader"] section[data-testid="stFileUploaderDropzone"] button[data-testid="baseButton-secondary"] {
+    background: #2563eb !important;
+    color: #ffffff !important;
+    border: 1px solid #1d4ed8 !important;
+    border-radius: 12px !important;
+    padding: 12px 22px !important;
+    min-height: 50px !important;
+    font-weight: 800 !important;
+    font-size: 1.05rem !important;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35) !important;
+}
+div[data-testid="stFileUploader"] section[data-testid="stFileUploaderDropzone"] button[data-testid="baseButton-secondary"] * {
+    color: #ffffff !important;
+    font-weight: 800 !important;
+}
+div[data-testid="stFileUploader"] section[data-testid="stFileUploaderDropzone"] button[data-testid="baseButton-secondary"]:hover {
+    background: #1d4ed8 !important;
+    border-color: #1e40af !important;
 }
 </style>
 """,
@@ -434,7 +444,7 @@ def render_guide_slider(prefix: str, descriptions: list[str], fallback_descripti
 
             with count_col:
                 st.markdown(
-                    f"<div class='guide-page'>{current_index + 1} / {total}</div>",
+                    f"<div class='guide-slide-count'>{current_index + 1} / {total}</div>",
                     unsafe_allow_html=True,
                 )
 
