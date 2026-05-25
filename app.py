@@ -35,13 +35,16 @@ DEFAULT_TARGET_KEYWORDS = [
     "毒薬",
 ]
 
+
+
+STEP1_GUIDE_TEXTS_BY_FILE = {
+    "step1_01.png": "「現在在庫検索」を開きます。",
+    "step1_02.png": "該当支店を選択し、CSV出力",
+    "step1_03.png": "ダウンロードが完了すると右上に表示されますので左クリック",
+    "step1_04.png": "フォルダに入っていることを確認。<br>通常はダウンロードフォルダに入ってます",
+}
+
 GUIDE_TEXTS = {
-    "step1": [
-        "「現在在庫検索」を開きます。",
-        "支店を選択して検索します。",
-        "検索結果を確認します。",
-        "CSV出力を押してファイルを保存します。",
-    ],
     "step2": [
         "ダウンロードした在庫データをアップロードします。",
         "内容を確認して、資料を作成します。",
@@ -412,7 +415,12 @@ def get_guide_images(prefix: str) -> list[Path]:
     )
 
 
-def render_guide_slider(prefix: str, descriptions: list[str], fallback_description: str = "") -> None:
+def render_guide_slider(
+    prefix: str,
+    descriptions: list[str] | None = None,
+    fallback_description: str = "",
+    descriptions_by_filename: dict[str, str] | None = None,
+) -> None:
     """前へ/次へで切り替える簡易スライドUIを表示する。"""
     images = get_guide_images(prefix)
     if not images:
@@ -457,7 +465,15 @@ def render_guide_slider(prefix: str, descriptions: list[str], fallback_descripti
                     st.session_state[state_key] = min(total - 1, st.session_state[state_key] + 1)
                     st.rerun()
 
-        caption = descriptions[current_index] if current_index < len(descriptions) else fallback_description
+        current_image_name = images[current_index].name
+        caption = ""
+        if descriptions_by_filename:
+            caption = descriptions_by_filename.get(current_image_name, "")
+        if not caption and descriptions:
+            caption = descriptions[current_index] if current_index < len(descriptions) else ""
+        if not caption:
+            caption = fallback_description
+
         if caption:
             st.markdown(
                 f"<div class='guide-caption'>{caption}</div>",
@@ -485,8 +501,8 @@ with tab_make:
     )
     render_guide_slider(
         "step1",
-        GUIDE_TEXTS.get("step1", []),
         fallback_description="表示された内容を確認し、必要なデータを保存します。",
+        descriptions_by_filename=STEP1_GUIDE_TEXTS_BY_FILE,
     )
 
     show_step(
