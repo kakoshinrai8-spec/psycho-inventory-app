@@ -4,6 +4,8 @@ from pathlib import Path
 
 import pandas as pd
 import streamlit as st
+from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+from openpyxl.worksheet.page import PageMargins
 
 
 # =========================
@@ -402,16 +404,55 @@ def to_excel_bytes(output_df: pd.DataFrame) -> bytes:
 
         widths = {
             "A": 16,
-            "B": 42,
+            "B": 50,
             "C": 14,
-            "D": 20,
+            "D": 18,
             "E": 10,
         }
         for col, width in widths.items():
             ws.column_dimensions[col].width = width
 
+        thin_side = Side(style="thin", color="D9D9D9")
+        thin_border = Border(left=thin_side, right=thin_side, top=thin_side, bottom=thin_side)
+        header_fill = PatternFill("solid", fgColor="D9EAF7")
+        header_font = Font(bold=True, color="000000")
+
+        for row in ws.iter_rows(min_row=1, max_row=ws.max_row, min_col=1, max_col=ws.max_column):
+            for cell in row:
+                cell.border = thin_border
+
+        for cell in ws[1]:
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+        ws.row_dimensions[1].height = 22
+
+        for row in ws.iter_rows(min_row=2, max_row=ws.max_row):
+            row[0].alignment = Alignment(horizontal="center", vertical="center")
+            row[1].alignment = Alignment(horizontal="left", vertical="center")
+            row[2].alignment = Alignment(horizontal="center", vertical="center")
+            row[3].alignment = Alignment(horizontal="center", vertical="center")
+            row[4].alignment = Alignment(horizontal="center", vertical="center")
+
         ws.auto_filter.ref = ws.dimensions
         ws.freeze_panes = "A2"
+        ws.print_title_rows = "1:1"
+        ws.print_area = ws.dimensions
+
+        ws.page_setup.orientation = "portrait"
+        ws.page_setup.paperSize = ws.PAPERSIZE_A4
+        ws.page_setup.fitToWidth = 1
+        ws.page_setup.fitToHeight = 0
+        ws.sheet_properties.pageSetUpPr.fitToPage = True
+
+        ws.page_margins = PageMargins(
+            left=0.1,
+            right=0.1,
+            top=0.2,
+            bottom=0.2,
+            header=0.1,
+            footer=0.1,
+        )
 
         for cell in ws["E"][1:]:
             cell.number_format = "0"
