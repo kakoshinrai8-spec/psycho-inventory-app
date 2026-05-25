@@ -28,6 +28,7 @@ OUTPUT_COLUMNS = [
     "包装単位",
     "商品マスタ.記号",
     "数",
+    "備考",
 ]
 
 # 今回の対象
@@ -358,6 +359,7 @@ def build_output(source: pd.DataFrame, master: pd.DataFrame, target_keywords: li
         merged = merged[merged["記号"] != ""]
 
     output = merged[["商品コード", "商品名", "包装単位", "記号", "数"]].copy()
+    output["備考"] = ""
     output.columns = OUTPUT_COLUMNS
 
     # ---- 並び替え用の内部キー（最終出力には含めない） ----
@@ -387,7 +389,7 @@ def build_output(source: pd.DataFrame, master: pd.DataFrame, target_keywords: li
         kind="stable",
     ).reset_index(drop=True)
 
-    # 最終出力は既存仕様の5列のみ
+    # 最終出力は仕様列のみ
     output = output[OUTPUT_COLUMNS].copy()
 
     return output
@@ -404,10 +406,11 @@ def to_excel_bytes(output_df: pd.DataFrame) -> bytes:
 
         widths = {
             "A": 16,
-            "B": 50,
+            "B": 38,
             "C": 14,
             "D": 18,
             "E": 10,
+            "F": 20,
         }
         for col, width in widths.items():
             ws.column_dimensions[col].width = width
@@ -433,6 +436,7 @@ def to_excel_bytes(output_df: pd.DataFrame) -> bytes:
             row[2].alignment = Alignment(horizontal="center", vertical="center")
             row[3].alignment = Alignment(horizontal="center", vertical="center")
             row[4].alignment = Alignment(horizontal="center", vertical="center")
+            row[5].alignment = Alignment(horizontal="left", vertical="center")
 
         ws.auto_filter.ref = ws.dimensions
         ws.freeze_panes = "A2"
