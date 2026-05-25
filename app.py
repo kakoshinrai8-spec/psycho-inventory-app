@@ -358,8 +358,35 @@ def build_output(source: pd.DataFrame, master: pd.DataFrame, target_keywords: li
     output = merged[["商品コード", "商品名", "包装単位", "記号", "数"]].copy()
     output.columns = OUTPUT_COLUMNS
 
-    # 並び順は後でロジック追加予定。今は暫定。
-    output = output.sort_values(["商品マスタ.記号", "商品コード"], kind="stable").reset_index(drop=True)
+    # ---- 並び替え用の内部キー（最終出力には含めない） ----
+    mark_series = output["商品マスタ.記号"].fillna("").astype(str).str.strip()
+    output["sort_category"] = 9
+    output.loc[mark_series.str.contains("向精神", na=False), "sort_category"] = 1
+    output.loc[mark_series.str.contains("生活改善薬", na=False), "sort_category"] = 2
+    output.loc[mark_series.str.contains("毒薬", na=False), "sort_category"] = 3
+
+    # 商品名からメーカー名（｢...｣ / 「...」）を除外した並び替えキー
+    name_series = output["商品名"].fillna("").astype(str)
+    output["sort_name_base"] = name_series.str.replace(r"[｢「].*?[｣」]", "", regex=True).str.strip()
+
+    # 同一薬品・同一規格内で「ﾄｰﾜ」を優先
+    output["sort_maker_priority"] = 1
+    output.loc[name_series.str.contains("ﾄｰﾜ", na=False), "sort_maker_priority"] = 0
+
+    output = output.sort_values(
+        by=[
+            "sort_category",
+            "sort_name_base",
+            "sort_maker_priority",
+            "商品名",
+            "包装単位",
+            "商品コード",
+        ],
+        kind="stable",
+    ).reset_index(drop=True)
+
+    # 最終出力は既存仕様の5列のみ
+    output = output[OUTPUT_COLUMNS].copy()
 
     return output
 
