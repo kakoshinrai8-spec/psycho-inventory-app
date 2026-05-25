@@ -375,6 +375,7 @@ def build_output(source: pd.DataFrame, master: pd.DataFrame, target_keywords: li
     output["sort_name_base"] = (
         name_series.str.replace(r"[｢「].*?[｣」]", "", regex=True)
         .str.replace(r"(ＯＤ|OD)", "", regex=True)
+        .str.replace(r"(\d+(?:\.\d+)?)\s*mg", "", regex=True, flags=re.IGNORECASE)
         .str.strip()
     )
 
@@ -391,6 +392,16 @@ def build_output(source: pd.DataFrame, master: pd.DataFrame, target_keywords: li
     output["sort_maker_priority"] = 1
     output.loc[name_series.str.contains("ﾄｰﾜ", na=False), "sort_maker_priority"] = 0
 
+    # 包装単位を自然順に並べる（100T < 500T < 1000T、同数なら通常 < B < H < その他）
+    pack_series = output["包装単位"].fillna("").astype(str).str.strip()
+    pack_number_extracted = pack_series.str.extract(r"(\d+(?:\.\d+)?)")[0]
+    output["sort_pack_number"] = pd.to_numeric(pack_number_extracted, errors="coerce").fillna(9999)
+
+    output["sort_pack_prefix"] = 9
+    output.loc[pack_series.str.match(r"^[bB]", na=False), "sort_pack_prefix"] = 1
+    output.loc[pack_series.str.match(r"^[hH]", na=False), "sort_pack_prefix"] = 2
+    output.loc[~pack_series.str.match(r"^[bBhH]", na=False), "sort_pack_prefix"] = 0
+
     output = output.sort_values(
         by=[
             "sort_category",
@@ -398,6 +409,8 @@ def build_output(source: pd.DataFrame, master: pd.DataFrame, target_keywords: li
             "sort_od_priority",
             "sort_strength",
             "sort_maker_priority",
+            "sort_pack_number",
+            "sort_pack_prefix",
             "商品名",
             "包装単位",
             "商品コード",
