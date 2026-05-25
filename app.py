@@ -1,4 +1,5 @@
 import io
+import re
 from datetime import datetime
 from pathlib import Path
 
@@ -369,9 +370,22 @@ def build_output(source: pd.DataFrame, master: pd.DataFrame, target_keywords: li
     output.loc[mark_series.str.contains("生活改善薬", na=False), "sort_category"] = 2
     output.loc[mark_series.str.contains("毒薬", na=False), "sort_category"] = 3
 
-    # 商品名からメーカー名（｢...｣ / 「...」）を除外した並び替えキー
+    # 商品名からメーカー名・OD表記を除外した並び替えキー（同一成分系を近くにまとめる）
     name_series = output["商品名"].fillna("").astype(str)
-    output["sort_name_base"] = name_series.str.replace(r"[｢「].*?[｣」]", "", regex=True).str.strip()
+    output["sort_name_base"] = (
+        name_series.str.replace(r"[｢「].*?[｣」]", "", regex=True)
+        .str.replace(r"(ＯＤ|OD)", "", regex=True)
+        .str.strip()
+    )
+
+    # 普通錠を先、OD錠を後
+    output["sort_od_priority"] = 0
+    output.loc[name_series.str.upper().str.contains("OD", na=False), "sort_od_priority"] = 1
+    output.loc[name_series.str.contains("ＯＤ", na=False), "sort_od_priority"] = 1
+
+    # 規格（mg）を数値順に並べる。取得できない場合は後ろへ
+    strength_extracted = name_series.str.extract(r"(\d+(?:\.\d+)?)\s*mg", flags=re.IGNORECASE)[0]
+    output["sort_strength"] = pd.to_numeric(strength_extracted, errors="coerce").fillna(9999)
 
     # 同一薬品・同一規格内で「ﾄｰﾜ」を優先
     output["sort_maker_priority"] = 1
@@ -381,6 +395,8 @@ def build_output(source: pd.DataFrame, master: pd.DataFrame, target_keywords: li
         by=[
             "sort_category",
             "sort_name_base",
+            "sort_od_priority",
+            "sort_strength",
             "sort_maker_priority",
             "商品名",
             "包装単位",
@@ -405,12 +421,12 @@ def to_excel_bytes(output_df: pd.DataFrame) -> bytes:
         ws = writer.book[OUTPUT_SHEET_NAME]
 
         widths = {
-            "A": 16,
-            "B": 38,
-            "C": 14,
-            "D": 18,
-            "E": 10,
-            "F": 20,
+            "A": 15,
+            "B": 36,
+            "C": 12,
+            "D": 16,
+            "E": 8,
+            "F": 18,
         }
         for col, width in widths.items():
             ws.column_dimensions[col].width = width
@@ -418,11 +434,13 @@ def to_excel_bytes(output_df: pd.DataFrame) -> bytes:
         thin_side = Side(style="thin", color="D9D9D9")
         thin_border = Border(left=thin_side, right=thin_side, top=thin_side, bottom=thin_side)
         header_fill = PatternFill("solid", fgColor="D9EAF7")
-        header_font = Font(bold=True, color="000000")
+        body_font = Font(size=11, color="000000")
+        header_font = Font(size=11, bold=True, color="000000")
 
         for row in ws.iter_rows(min_row=1, max_row=ws.max_row, min_col=1, max_col=ws.max_column):
             for cell in row:
                 cell.border = thin_border
+                cell.font = body_font
 
         for cell in ws[1]:
             cell.fill = header_fill
@@ -437,6 +455,7 @@ def to_excel_bytes(output_df: pd.DataFrame) -> bytes:
             row[3].alignment = Alignment(horizontal="center", vertical="center")
             row[4].alignment = Alignment(horizontal="center", vertical="center")
             row[5].alignment = Alignment(horizontal="left", vertical="center")
+            ws.row_dimensions[row[0].row].height = 21
 
         ws.auto_filter.ref = ws.dimensions
         ws.freeze_panes = "A2"
