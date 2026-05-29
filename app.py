@@ -137,6 +137,23 @@ st.markdown(
     line-height: 1.6;
     font-weight: 700;
 }
+.guide-next-arrow {
+    margin-top: 120px;
+    text-align: center;
+    color: #ef4444;
+    font-size: 9rem;
+    line-height: 0.8;
+    font-weight: 900;
+    text-shadow: 0 5px 14px rgba(239, 68, 68, 0.35);
+}
+.guide-next-arrow-label {
+    margin-bottom: 10px;
+    text-align: center;
+    color: #b91c1c;
+    font-size: 1.45rem;
+    font-weight: 900;
+    white-space: nowrap;
+}
 .upload-guide-card {
     background: #dbeafe;
     border: 2px solid #60a5fa;
@@ -600,7 +617,20 @@ def render_guide_slider(
                 unsafe_allow_html=True,
             )
 
-        st.image(str(images[current_index]), width=720)
+        if prefix == "step1" and current_index == total - 1:
+            image_col, arrow_col = st.columns([4, 2], gap="small")
+            with image_col:
+                st.image(str(images[current_index]), width=720)
+            with arrow_col:
+                st.markdown(
+                    """
+                    <div class="guide-next-arrow-label">次のステップへ</div>
+                    <div class="guide-next-arrow">↓</div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+        else:
+            st.image(str(images[current_index]), width=720)
 
 
 # =========================
