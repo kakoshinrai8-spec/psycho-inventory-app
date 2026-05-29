@@ -2,6 +2,7 @@ import io
 import re
 from datetime import datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import pandas as pd
 import streamlit as st
@@ -429,9 +430,18 @@ def to_excel_bytes(output_df: pd.DataFrame) -> bytes:
     buffer = io.BytesIO()
 
     with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
-        output_df.to_excel(writer, index=False, sheet_name=OUTPUT_SHEET_NAME)
+        output_df.to_excel(writer, index=False, sheet_name=OUTPUT_SHEET_NAME, startrow=1)
 
         ws = writer.book[OUTPUT_SHEET_NAME]
+        now = datetime.now(ZoneInfo("Asia/Tokyo"))
+        weekdays = ["月", "火", "水", "木", "金", "土", "日"]
+        weekday = weekdays[now.weekday()]
+        timestamp_text = (
+            f"作成日時：{now.year}年{now.month}月{now.day}日({weekday}) "
+            f"{now.hour}時{now.minute:02d}分"
+        )
+        ws["A1"] = timestamp_text
+        ws.merge_cells("A1:F1")
 
         widths = {
             "A": 15,
@@ -447,6 +457,7 @@ def to_excel_bytes(output_df: pd.DataFrame) -> bytes:
         thin_side = Side(style="thin", color="D9D9D9")
         thin_border = Border(left=thin_side, right=thin_side, top=thin_side, bottom=thin_side)
         header_fill = PatternFill("solid", fgColor="D9EAF7")
+        timestamp_fill = PatternFill("solid", fgColor="F7F7F7")
         body_font = Font(size=11, color="000000")
         header_font = Font(size=11, bold=True, color="000000")
 
@@ -455,13 +466,18 @@ def to_excel_bytes(output_df: pd.DataFrame) -> bytes:
                 cell.border = thin_border
                 cell.font = body_font
 
-        for cell in ws[1]:
+        ws["A1"].fill = timestamp_fill
+        ws["A1"].font = body_font
+        ws["A1"].alignment = Alignment(horizontal="left", vertical="center")
+        ws.row_dimensions[1].height = 20
+
+        for cell in ws[2]:
             cell.fill = header_fill
             cell.font = header_font
             cell.alignment = Alignment(horizontal="center", vertical="center")
-        ws.row_dimensions[1].height = 22
+        ws.row_dimensions[2].height = 22
 
-        for row in ws.iter_rows(min_row=2, max_row=ws.max_row):
+        for row in ws.iter_rows(min_row=3, max_row=ws.max_row):
             row[0].alignment = Alignment(horizontal="center", vertical="center")
             row[1].alignment = Alignment(horizontal="left", vertical="center")
             row[2].alignment = Alignment(horizontal="center", vertical="center")
@@ -470,10 +486,10 @@ def to_excel_bytes(output_df: pd.DataFrame) -> bytes:
             row[5].alignment = Alignment(horizontal="left", vertical="center")
             ws.row_dimensions[row[0].row].height = 21
 
-        ws.auto_filter.ref = ws.dimensions
-        ws.freeze_panes = "A2"
-        ws.print_title_rows = "1:1"
-        ws.print_area = ws.dimensions
+        ws.auto_filter.ref = f"A2:F{ws.max_row}"
+        ws.freeze_panes = "A3"
+        ws.print_title_rows = "1:2"
+        ws.print_area = f"A1:F{ws.max_row}"
 
         ws.page_setup.orientation = "portrait"
         ws.page_setup.paperSize = ws.PAPERSIZE_A4
@@ -490,7 +506,7 @@ def to_excel_bytes(output_df: pd.DataFrame) -> bytes:
             footer=0.1,
         )
 
-        for cell in ws["E"][1:]:
+        for cell in ws["E"][2:]:
             cell.number_format = "0"
 
     buffer.seek(0)
